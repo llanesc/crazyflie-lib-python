@@ -119,13 +119,13 @@ class CRTPPacket(object):
 
     def _set_data(self, data):
         """Set the packet data"""
-        if isinstance(data, bytearray):
+        if type(data) == bytearray:
             self._data = data
-        elif isinstance(data, str):
+        elif type(data) == str:
             self._data = bytearray(data.encode('ISO-8859-1'))
-        elif isinstance(data, list) or isinstance(data, tuple):
+        elif type(data) == list or type(data) == tuple:
             self._data = bytearray(data)
-        elif isinstance(data, bytes):
+        elif type(data) == bytes:
             self._data = bytearray(data)
         else:
             raise Exception('Data must be bytearray, string, list or tuple,'

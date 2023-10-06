@@ -109,7 +109,7 @@ class ParamTocElement:
             self.name = strs[1]
 
             metadata = data[0]
-            if isinstance(metadata, str):
+            if type(metadata) == str:
                 metadata = ord(metadata)
 
             # If the fouth byte (1 << 4) (0x10) is set we have extended

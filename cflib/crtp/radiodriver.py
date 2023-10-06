@@ -662,7 +662,7 @@ class _RadioDriverThread(threading.Thread):
             if outPacket:
                 dataOut.append(outPacket.header)
                 for X in outPacket.data:
-                    if isinstance(X, int):
+                    if type(X) == int:
                         dataOut.append(X)
                     else:
                         dataOut.append(ord(X))
