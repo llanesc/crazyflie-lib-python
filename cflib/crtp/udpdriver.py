@@ -29,6 +29,7 @@ import re
 import socket
 import struct
 from urllib.parse import urlparse
+import logging
 
 from .crtpdriver import CRTPDriver
 from .crtpstack import CRTPPacket
@@ -37,11 +38,14 @@ from .exceptions import WrongUriType
 __author__ = 'Bitcraze AB'
 __all__ = ['UdpDriver']
 
+logger = logging.getLogger(__name__)
+
 
 class UdpDriver(CRTPDriver):
 
     def __init__(self):
         self.needs_resending = False
+        logger.info('Initialized UDP driver.')
 
     def connect(self, uri, linkQualityCallback, linkErrorCallback):
         if not re.search('^udp://', uri):
@@ -103,7 +107,6 @@ class UdpDriver(CRTPDriver):
         return 'udp'
 
     def scan_interface(self, address):
-        return []
         # try:
         #     socket.inet_aton(address)
         #     # s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -117,4 +120,6 @@ class UdpDriver(CRTPDriver):
         #     print('UDP socket not found')
         # else:
         #     uri = [['udp://' + address + ':' + port, '']]
-        # return uri
+        uri = [['udp://0.0.0.0:19850', '']]
+        logger.info(uri)
+        return uri

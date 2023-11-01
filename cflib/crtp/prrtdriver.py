@@ -33,7 +33,7 @@ class PrrtDriver(CRTPDriver):
         self.link_error_callback = None
         self.packet_log = None
         self.log_index = 0
-        logger.info('Initialized PRRT driver.')
+        logger.info('Initialized PRRT driver. Testing testing.')
 
     def connect(self, uri, linkQualityCallback, linkErrorCallback):
         # check if the URI is a PRRT URI
