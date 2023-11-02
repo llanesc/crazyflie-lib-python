@@ -29,6 +29,7 @@ import re
 import socket
 import struct
 from urllib.parse import urlparse
+import logging
 
 from .crtpdriver import CRTPDriver
 from .crtpstack import CRTPPacket
@@ -37,11 +38,14 @@ from .exceptions import WrongUriType
 __author__ = 'Bitcraze AB'
 __all__ = ['UdpDriver']
 
+logger = logging.getLogger(__name__)
+
 
 class UdpDriver(CRTPDriver):
 
     def __init__(self):
-        None
+        self.needs_resending = False
+        logger.info('Initialized UDP driver.')
 
     def connect(self, uri, linkQualityCallback, linkErrorCallback):
         if not re.search('^udp://', uri):
@@ -52,18 +56,20 @@ class UdpDriver(CRTPDriver):
         self.queue = queue.Queue()
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.addr = (parse.hostname, parse.port)
+        
         self.socket.connect(self.addr)
 
-        self.socket.sendto('\xFF\x01\x01\x01'.encode(), self.addr)
+        self.socket.sendto(b'\xF3', self.addr)
 
     def receive_packet(self, time=0):
         data, addr = self.socket.recvfrom(1024)
 
         if data:
-            data = struct.unpack('B' * (len(data) - 1), data[0:len(data) - 1])
-            pk = CRTPPacket()
-            pk.port = data[0]
-            pk.data = data[1:]
+            # data = struct.unpack('B' * (len(data) - 1), data[0:len(data) - 1])
+            data = struct.unpack('B' * len(data), data)
+            pk = CRTPPacket(header=data[0], data=data[1:])
+            # pk.port = data[0]
+            # pk.data = data[1:]
             return pk
 
         try:
@@ -78,25 +84,41 @@ class UdpDriver(CRTPDriver):
             return None
 
     def send_packet(self, pk):
-        raw = (pk.port,) + struct.unpack('B' * len(pk.data), pk.data)
+        # raw = (pk.port,) + struct.unpack('B' * len(pk.data), pk.data)
+        raw = (pk.header,) + struct.unpack('B' * len(pk.data), pk.data)
 
-        cksum = 0
-        for i in raw:
-            cksum += i
+        # cksum = 0
+        # for i in raw:
+        #     cksum += i
 
-        cksum %= 256
+        # cksum %= 256
 
-        data = ''.join(chr(v) for v in (raw + (cksum,)))
+        # data = ''.join(chr(v) for v in (raw + (cksum,)))
 
         # print tuple(data)
-        self.socket.sendto(data.encode(), self.addr)
+        data = struct.pack('B' * len(raw), *raw)
+        self.socket.sendto(data, self.addr)
 
     def close(self):
         # Remove this from the server clients list
-        self.socket.sendto('\xFF\x01\x02\x02'.encode(), self.addr)
+        self.socket.sendto(b'\xF4', self.addr)
 
     def get_name(self):
         return 'udp'
 
     def scan_interface(self, address):
-        return []
+        # try:
+        #     socket.inet_aton(address)
+        #     # s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        #     port = '19850'
+        #     # print(f'Attempting connection on {address}:{port}')
+        #     # s.connect((address, int(port)))
+        #     # print('connected')
+        #     # s.shutdown(2)
+        # except socket.error:
+        #     uri = []
+        #     print('UDP socket not found')
+        # else:
+        #     uri = [['udp://' + address + ':' + port, '']]
+        uri = [['udp://0.0.0.0:19850', '']]
+        return uri
