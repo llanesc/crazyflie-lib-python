@@ -121,5 +121,4 @@ class UdpDriver(CRTPDriver):
         # else:
         #     uri = [['udp://' + address + ':' + port, '']]
         uri = [['udp://0.0.0.0:19850', '']]
-        logger.info(uri)
         return uri
